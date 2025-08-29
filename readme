@@ -1,0 +1,9 @@
+--todo--
+
+# Weather App
+
+1. Få en väder lista i vågrätt, med 5 default värden, Amsterdam, Stockholm, Istanbul, Santiago, London (namn, temp, väder, icon)
+2. Sök funktion för att ta reda på enskilda väder.
+3. Klick bara cards så att man kommer in i en detalj sida.
+4. Design (responsive background som ändrar utifrån vilket väder det är) backgrund gifs,
+5. Göra den responsive för mobil och Ipad
