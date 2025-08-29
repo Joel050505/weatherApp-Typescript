@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 
 // const customWeatherData = {
 //   name: "Stockholm",
@@ -41,8 +41,8 @@ export default function App() {
     "Amsterdam",
     "Stockholm",
     "Istanbul",
-    "Santiago",
-    "Kapstaden",
+    "Peru",
+    "Cairo",
   ];
 
   const [defaultCities, setDefaultCities] = useState<WeatherData[]>([]);
@@ -61,6 +61,24 @@ export default function App() {
         return "🌦️";
       case "Thunderstorm":
         return "🌩️";
+      case "Mist":
+        return "🌫️";
+      case "Fog":
+        return "☁️";
+      case "Haze":
+        return "☁️";
+      case "Smoke":
+        return "💨";
+      case "Dust":
+        return "🌬️";
+      case "Sand":
+        return "🏜️";
+      case "Ash":
+        return "🌋";
+      case "Squall":
+        return "💨";
+      case "Tornado":
+        return "🌪️";
       default:
         return "🖐";
     }
@@ -76,6 +94,7 @@ export default function App() {
         ).then((res) => res.json())
       );
       const results = await Promise.all(promises);
+
       console.log("Default cities weather:", results);
       setDefaultCities(results);
 
@@ -125,9 +144,13 @@ export default function App() {
         <div>
           <ul className="flex gap-10 ">
             {defaultCities.map((city) => (
-              <li className="flex flex-col text-center" key={city.name}>
+              <li
+                className="flex flex-col text-gray-700 text-center"
+                key={city.name}
+              >
                 <span className="text-4xl">
                   {checkWeather(city.weather[0].main)}
+                  {city.weather[0].main}
                 </span>
                 <strong>{city.name}</strong> {city.main.temp}°C{" "}
               </li>
