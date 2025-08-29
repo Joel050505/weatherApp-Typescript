@@ -1,11 +1,5 @@
 import {useState, useEffect} from "react";
 
-// const customWeatherData = {
-//   name: "Stockholm",
-//   weather: [{ description: "klart" }],
-//   main: { temp: 22 },
-// };
-
 type WeatherData = {
   name: string;
   main: {
@@ -14,23 +8,11 @@ type WeatherData = {
   weather: [
     {
       main: string;
+      description: string;
+      icon: string;
     }
   ];
 };
-
-// type CityWeather = {
-//   name: string;
-//   main: {
-//     temp: number;
-//   };
-//   weather: [
-//     {
-//       main: string;
-//     }
-//   ];
-// };
-
-// Clouds, Rain, Clear, Snow, Drizzle, Thunderstorm
 
 export default function App() {
   const [search, setSearch] = useState("");
@@ -41,48 +23,48 @@ export default function App() {
     "Amsterdam",
     "Stockholm",
     "Istanbul",
-    "Peru",
+    "Santiago",
     "Cairo",
   ];
 
   const [defaultCities, setDefaultCities] = useState<WeatherData[]>([]);
 
-  function checkWeather(weatherType: string) {
-    switch (weatherType) {
-      case "Clouds":
-        return "☁️";
-      case "Rain":
-        return "🌧️";
-      case "Clear":
-        return "☀️";
-      case "Snow":
-        return "❄️";
-      case "Drizzle":
-        return "🌦️";
-      case "Thunderstorm":
-        return "🌩️";
-      case "Mist":
-        return "🌫️";
-      case "Fog":
-        return "☁️";
-      case "Haze":
-        return "☁️";
-      case "Smoke":
-        return "💨";
-      case "Dust":
-        return "🌬️";
-      case "Sand":
-        return "🏜️";
-      case "Ash":
-        return "🌋";
-      case "Squall":
-        return "💨";
-      case "Tornado":
-        return "🌪️";
-      default:
-        return "🖐";
-    }
-  }
+  // function checkWeather(weatherType: string) {
+  //   switch (weatherType) {
+  //     case "Clouds":
+  //       return "☁️";
+  //     case "Rain":
+  //       return "🌧️";
+  //     case "Clear":
+  //       return "☀️";
+  //     case "Snow":
+  //       return "❄️";
+  //     case "Drizzle":
+  //       return "🌦️";
+  //     case "Thunderstorm":
+  //       return "🌩️";
+  //     case "Mist":
+  //       return "🌫️";
+  //     case "Fog":
+  //       return "☁️";
+  //     case "Haze":
+  //       return "☁️";
+  //     case "Smoke":
+  //       return "💨";
+  //     case "Dust":
+  //       return "🌬️";
+  //     case "Sand":
+  //       return "🏜️";
+  //     case "Ash":
+  //       return "🌋";
+  //     case "Squall":
+  //       return "💨";
+  //     case "Tornado":
+  //       return "🌪️";
+  //     default:
+  //       return "🖐";
+  //   }
+  // }
 
   const fetchWeather = async () => {
     try {
@@ -90,7 +72,7 @@ export default function App() {
 
       const promises = defaultCityNames.map((city) =>
         fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric&lang=sv`
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
         ).then((res) => res.json())
       );
       const results = await Promise.all(promises);
@@ -121,7 +103,7 @@ export default function App() {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200">
-      <div className="flex flex-col justify-center border-2 p-20 rounded gap-10  bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 transparent hover:shadow-2xl transition-all duration-500 cursor-pointer">
+      <div className="flex flex-col justify-center border-2 p-20 rounded gap-10  bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 transparent hover:shadow-2xl transition-all duration-500 ">
         <h1 className="text-4xl font-bold text-center">Weather app</h1>
         <div className="flex gap-4 justify-center">
           <input
@@ -148,10 +130,13 @@ export default function App() {
                 className="flex flex-col text-gray-700 text-center"
                 key={city.name}
               >
-                <span className="text-4xl">
-                  {checkWeather(city.weather[0].main)}
-                  {city.weather[0].main}
-                </span>
+                <img
+                  src={`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
+                  alt={city.weather[0].description}
+                  title={city.weather[0].description}
+                  className="mx-auto"
+                />
+                <span className="text-4xl"></span>
                 <strong>{city.name}</strong> {city.main.temp}°C{" "}
               </li>
             ))}
