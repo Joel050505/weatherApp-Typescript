@@ -30,7 +30,7 @@ export default function GlassClock(): React.JSX.Element {
 
   return (
     <div className="fixed top-6 right-6 z-50">
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 shadow-2xl hover:bg-white/15 cursor-pointer hover:scale-105 transition-all duration-300 backdrop-saturate-150">
+      <div className=" p-4">
         <div className="text-center">
           <div className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-1 font-mono tracking-wider">
             {formatTime(time)}
@@ -41,7 +41,7 @@ export default function GlassClock(): React.JSX.Element {
         </div>
 
         {/* Subtle pulse animation */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 animate-pulse"></div>
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r animate-pulse"></div>
       </div>
     </div>
   );
