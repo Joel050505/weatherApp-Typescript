@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import AlertBox from "./Alert";
+import GlassClock from "./ClockComponent";
 
 type WeatherData = {
   name: string;
@@ -19,6 +21,8 @@ export default function App() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isShowing, setIsShowing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [time, setTime] = useState<Date>(new Date());
   // const [customData, setCustomData] = useState({ ...customWeatherData });
 
   const defaultCityNames = [
@@ -31,6 +35,14 @@ export default function App() {
 
   const [defaultCities, setDefaultCities] = useState<WeatherData[]>([]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date()); // update time every minute
+    }, 60000); // 60,000 ms = 1 min
+
+    return () => clearInterval(timer);
+  }, []);
+
   // Search funciton to filter for city name
   async function searchCity() {
     const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
@@ -40,7 +52,7 @@ export default function App() {
       }&appid=${API_KEY}&units=metric`
     );
     if (!response.ok) {
-      alert("City not found, please try again");
+      setShowAlert(true);
       return setSearch("");
     }
 
@@ -49,9 +61,17 @@ export default function App() {
     setTimeout(() => {
       setLoading(true);
     }, 200);
+
     setIsShowing(true);
     setSearch("");
   }
+
+  useEffect(() => {
+    if (showAlert === true) {
+      const timer = setTimeout(() => setShowAlert(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAlert]);
 
   // Fetching weather data from OpenWeatherMap API
   const fetchWeather = async () => {
@@ -77,10 +97,23 @@ export default function App() {
   }, []);
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200">
-      <div className="flex flex-col justify-center border-2 p-20 rounded gap-10  bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 transparent hover:shadow-2xl transition-all duration-500 ">
-        <h1 className="text-4xl font-bold text-center">Weather app</h1>
-        <div className="flex gap-4 justify-center">
+    <div
+      className="flex items-center justify-center h-screen bg-gradient-to-br"
+      style={{
+        backgroundImage:
+          time.getHours() >= 6 && time.getHours() < 18
+            ? "url('/DayBg-pic.png')"
+            : "url('/NightBg-pic.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="flex flex-col justify-center border w-6/12 h-6/12 border-white/20 p-20 rounded-3xl gap-10 bg-gradient-to-br from-blue-400/20 via-purple-500/20 to-pink-400/20 backdrop-blur-lg shadow-2xl hover:shadow-3xl transition-all duration-500 backdrop-saturate-150">
+        <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent drop-shadow-lg">
+          Weather app
+        </h1>
+        <div className="flex gap-4 justify-center relative">
           <input
             type="text"
             placeholder="Enter city name..."
@@ -88,7 +121,7 @@ export default function App() {
             onChange={(e) => {
               setSearch(e.target.value);
             }}
-            className="border border-gray-300 p-2 rounded"
+            className="border border-white/30 text-white bg-white/10 backdrop-blur-md p-4 w-64 rounded-2xl placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all duration-300 shadow-lg"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 searchCity();
@@ -96,47 +129,58 @@ export default function App() {
             }}
           />
           <button
-            onClick={searchCity}
-            className="border-blue-600 bg-blue-600 text-white border-2 p-2 w-24 rounded-xl hover:bg-blue-700 cursor-pointer transition-all"
+            onClick={() => {
+              searchCity();
+              showAlert ? setShowAlert(true) : setShowAlert(false);
+            }}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-none p-4 w-28 rounded-2xl font-semibold hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Search
           </button>
+          {showAlert && <AlertBox />}
+          {/* // Digital clock for time and date */}
+          <GlassClock />
         </div>
-
         <div>
-          <ul className="flex gap-10 justify-center">
+          <ul className="flex gap-12 justify-center">
             {!isShowing ? (
               defaultCities.map((city) => (
                 <li
-                  className="flex flex-col text-gray-700 text-center"
+                  className="flex flex-col text-white text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:bg-white/20 hover:cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg"
                   key={city.name}
                 >
                   <img
                     src={`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
                     alt={city.weather[0].description}
                     title={city.weather[0].description}
-                    className="mx-auto"
+                    className="mx-auto drop-shadow-lg"
                   />
                   <span className="text-4xl"></span>
-                  <strong>{city.name}</strong> {city.main.temp}°C{" "}
+                  <strong className="text-xl font-bold">{city.name}</strong>
+                  <span className="text-3xl font-light">
+                    {city.main.temp}°C
+                  </span>
                 </li>
               ))
             ) : loading ? (
               <li
-                className="flex justify-center flex-col text-gray-700 text-center"
+                className="flex justify-center flex-col text-white text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-lg"
                 key={weather?.name}
               >
                 <img
                   src={`https://openweathermap.org/img/wn/${weather?.weather[0].icon}@2x.png`}
                   alt={weather?.weather[0].description}
                   title={weather?.weather[0].description}
-                  className="mx-auto"
+                  className="mx-auto drop-shadow-lg"
                 />
                 <span className="text-4xl"></span>
-                <strong>{weather?.name}</strong> {weather?.main.temp}°C{" "}
+                <strong className="text-xl font-bold">{weather?.name}</strong>
+                <span className="text-3xl font-light">
+                  {weather?.main.temp}°C
+                </span>
               </li>
             ) : (
-              <div className="loader"></div>
+              <div className="loader animate-spin rounded-full h-16 w-16 border-4 border-white/30 border-t-white mx-auto"></div>
             )}
           </ul>
         </div>
