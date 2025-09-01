@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 
 type WeatherData = {
   name: string;
@@ -14,9 +14,22 @@ type WeatherData = {
   ];
 };
 
+// type CityWeather = {
+//   name: string;
+//   main: {
+//     temp: number;
+//   };
+//   weather: [
+//     {
+//       main: string;
+//     }
+//   ];
+// };
+
 export default function App() {
   const [search, setSearch] = useState("");
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [isShowing, setIsShowing] = useState(false);
   // const [customData, setCustomData] = useState({ ...customWeatherData });
 
   const defaultCityNames = [
@@ -24,48 +37,66 @@ export default function App() {
     "Stockholm",
     "Istanbul",
     "Santiago",
-    "Cairo",
+    "Kapstaden",
   ];
 
   const [defaultCities, setDefaultCities] = useState<WeatherData[]>([]);
 
-  // function checkWeather(weatherType: string) {
-  //   switch (weatherType) {
-  //     case "Clouds":
-  //       return "☁️";
-  //     case "Rain":
-  //       return "🌧️";
-  //     case "Clear":
-  //       return "☀️";
-  //     case "Snow":
-  //       return "❄️";
-  //     case "Drizzle":
-  //       return "🌦️";
-  //     case "Thunderstorm":
-  //       return "🌩️";
-  //     case "Mist":
-  //       return "🌫️";
-  //     case "Fog":
-  //       return "☁️";
-  //     case "Haze":
-  //       return "☁️";
-  //     case "Smoke":
-  //       return "💨";
-  //     case "Dust":
-  //       return "🌬️";
-  //     case "Sand":
-  //       return "🏜️";
-  //     case "Ash":
-  //       return "🌋";
-  //     case "Squall":
-  //       return "💨";
-  //     case "Tornado":
-  //       return "🌪️";
-  //     default:
-  //       return "🖐";
-  //   }
-  // }
+  function checkWeather(weatherType: string) {
+    switch (weatherType) {
+      case "Clouds":
+        return "☁️";
+      case "Rain":
+        return "🌧️";
+      case "Clear":
+        return "☀️";
+      case "Snow":
+        return "❄️";
+      case "Drizzle":
+        return "🌦️";
+      case "Thunderstorm":
+        return "🌩️";
+      case "Mist":
+        return "🌫️";
+      case "Fog":
+        return "☁️";
+      case "Haze":
+        return "☁️";
+      case "Smoke":
+        return "💨";
+      case "Dust":
+        return "🌬️";
+      case "Sand":
+        return "🏜️";
+      case "Ash":
+        return "🌋";
+      case "Squall":
+        return "💨";
+      case "Tornado":
+        return "🌪️";
+      default:
+        return "🖐";
+    }
+  }
+  // Search funciton to filter for city name
+  async function searchCity(city: string) {
+    const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${
+        search || "Stockholm"
+      }&appid=${API_KEY}&units=metric`
+    );
+    if (!response.ok) {
+      return;
+    }
+    const data = await response.json();
+    setWeather(data);
+    console.log(`${search} temp:`, data);
+    setIsShowing(true);
+    return city.toLowerCase().includes(search.toLowerCase());
+  }
 
+  // Fetching weather data from OpenWeatherMap API
   const fetchWeather = async () => {
     try {
       const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
@@ -76,21 +107,8 @@ export default function App() {
         ).then((res) => res.json())
       );
       const results = await Promise.all(promises);
-
-      console.log("Default cities weather:", results);
+      // console.log("Default cities weather:", results);
       setDefaultCities(results);
-
-      // const response = await fetch(
-      //   `https://api.openweathermap.org/data/2.5/weather?q=${
-      //     search || "Stockholm"
-      //   }&appid=${API_KEY}&units=metric&lang=sv`
-      // );
-      // if (!response.ok) {
-      //   return;
-      // }
-      // const data = await response.json();
-      // setWeather(data);
-      // console.log(`${search} temp:`, data);
     } catch (error) {
       console.error("Error fetching weather:", error);
     }
@@ -116,7 +134,7 @@ export default function App() {
             className="border border-gray-300 p-2 rounded"
           />
           <button
-            onClick={fetchWeather}
+            onClick={() => searchCity(search)}
             className="border-blue-600 bg-blue-600 text-white border-2 p-2 w-24 rounded-xl hover:bg-blue-700 cursor-pointer transition-all"
           >
             Search
@@ -125,21 +143,37 @@ export default function App() {
 
         <div>
           <ul className="flex gap-10 ">
-            {defaultCities.map((city) => (
+            {!isShowing ? (
+              defaultCities.map((city) => (
+                <li
+                  className="flex flex-col text-gray-700 text-center"
+                  key={city.name}
+                >
+                  <img
+                    src={`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
+                    alt={city.weather[0].description}
+                    title={city.weather[0].description}
+                    className="mx-auto"
+                  />
+                  <span className="text-4xl"></span>
+                  <strong>{city.name}</strong> {city.main.temp}°C{" "}
+                </li>
+              ))
+            ) : (
               <li
-                className="flex flex-col text-gray-700 text-center"
-                key={city.name}
+                className="flex justify-center flex-col text-gray-700 text-center"
+                key={weather?.name}
               >
                 <img
-                  src={`https://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
-                  alt={city.weather[0].description}
-                  title={city.weather[0].description}
+                  src={`https://openweathermap.org/img/wn/${weather?.weather[0].icon}@2x.png`}
+                  alt={weather?.weather[0].description}
+                  title={weather?.weather[0].description}
                   className="mx-auto"
                 />
                 <span className="text-4xl"></span>
-                <strong>{city.name}</strong> {city.main.temp}°C{" "}
+                <strong>{weather?.name}</strong> {weather?.main.temp}°C{" "}
               </li>
-            ))}
+            )}
           </ul>
         </div>
       </div>
