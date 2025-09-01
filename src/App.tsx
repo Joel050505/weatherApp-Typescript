@@ -14,22 +14,11 @@ type WeatherData = {
   ];
 };
 
-// type CityWeather = {
-//   name: string;
-//   main: {
-//     temp: number;
-//   };
-//   weather: [
-//     {
-//       main: string;
-//     }
-//   ];
-// };
-
 export default function App() {
   const [search, setSearch] = useState("");
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isShowing, setIsShowing] = useState(false);
+  const [loading, setLoading] = useState(false);
   // const [customData, setCustomData] = useState({ ...customWeatherData });
 
   const defaultCityNames = [
@@ -42,58 +31,26 @@ export default function App() {
 
   const [defaultCities, setDefaultCities] = useState<WeatherData[]>([]);
 
-  function checkWeather(weatherType: string) {
-    switch (weatherType) {
-      case "Clouds":
-        return "☁️";
-      case "Rain":
-        return "🌧️";
-      case "Clear":
-        return "☀️";
-      case "Snow":
-        return "❄️";
-      case "Drizzle":
-        return "🌦️";
-      case "Thunderstorm":
-        return "🌩️";
-      case "Mist":
-        return "🌫️";
-      case "Fog":
-        return "☁️";
-      case "Haze":
-        return "☁️";
-      case "Smoke":
-        return "💨";
-      case "Dust":
-        return "🌬️";
-      case "Sand":
-        return "🏜️";
-      case "Ash":
-        return "🌋";
-      case "Squall":
-        return "💨";
-      case "Tornado":
-        return "🌪️";
-      default:
-        return "🖐";
-    }
-  }
   // Search funciton to filter for city name
-  async function searchCity(city: string) {
+  async function searchCity() {
     const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
     const response = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${
-        search || "Stockholm"
+        search.charAt(0).toLocaleUpperCase() + search.slice(1)
       }&appid=${API_KEY}&units=metric`
     );
     if (!response.ok) {
-      return;
+      alert("City not found, please try again");
+      return setSearch("");
     }
+
     const data = await response.json();
     setWeather(data);
-    console.log(`${search} temp:`, data);
+    setTimeout(() => {
+      setLoading(true);
+    }, 200);
     setIsShowing(true);
-    return city.toLowerCase().includes(search.toLowerCase());
+    setSearch("");
   }
 
   // Fetching weather data from OpenWeatherMap API
@@ -126,15 +83,20 @@ export default function App() {
         <div className="flex gap-4 justify-center">
           <input
             type="text"
-            placeholder="Sök..."
+            placeholder="Enter city name..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
             }}
             className="border border-gray-300 p-2 rounded"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                searchCity();
+              }
+            }}
           />
           <button
-            onClick={() => searchCity(search)}
+            onClick={searchCity}
             className="border-blue-600 bg-blue-600 text-white border-2 p-2 w-24 rounded-xl hover:bg-blue-700 cursor-pointer transition-all"
           >
             Search
@@ -142,7 +104,7 @@ export default function App() {
         </div>
 
         <div>
-          <ul className="flex gap-10 ">
+          <ul className="flex gap-10 justify-center">
             {!isShowing ? (
               defaultCities.map((city) => (
                 <li
@@ -159,7 +121,7 @@ export default function App() {
                   <strong>{city.name}</strong> {city.main.temp}°C{" "}
                 </li>
               ))
-            ) : (
+            ) : loading ? (
               <li
                 className="flex justify-center flex-col text-gray-700 text-center"
                 key={weather?.name}
@@ -173,6 +135,8 @@ export default function App() {
                 <span className="text-4xl"></span>
                 <strong>{weather?.name}</strong> {weather?.main.temp}°C{" "}
               </li>
+            ) : (
+              <div className="loader"></div>
             )}
           </ul>
         </div>
